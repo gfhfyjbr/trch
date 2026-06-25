@@ -55,9 +55,30 @@ jobs:
             target/universal-apple-darwin/release/bundle/macos/*.app
           if-no-files-found: error
 
-      - name: Attach to GitHub Release (v* tags only)
+      # Rolling pre-release refreshed on every push to main / manual run: the latest
+      # universal .dmg is always downloadable from the "nightly" release (tag is moved
+      # to the current commit and old assets are replaced).
+      - name: Publish rolling "nightly" release
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete nightly --yes --cleanup-tag 2>/dev/null || true
+          gh release create nightly \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Nightly (latest main)" \
+            --notes "Automated universal macOS build from ${GITHUB_SHA:0:7}. Unsigned: mount the .dmg, then right-click the app and choose Open (or run: xattr -cr /Applications/TrchSync.app)." \
+            target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+      # Permanent versioned release for git tags (git tag v0.1.0 && git push --tags).
+      - name: Publish versioned release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: target/universal-apple-darwin/release/bundle/dmg/*.dmg
-          fail_on_unmatched_files: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Universal macOS build. Unsigned: mount the .dmg, then right-click the app and choose Open (or run: xattr -cr /Applications/TrchSync.app)." \
+            target/universal-apple-darwin/release/bundle/dmg/*.dmg \
+          || gh release upload "$GITHUB_REF_NAME" target/universal-apple-darwin/release/bundle/dmg/*.dmg --clobber
