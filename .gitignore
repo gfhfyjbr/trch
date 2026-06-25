@@ -1,0 +1,12 @@
+/target
+node_modules
+dist
+.bun-cache
+/gen
+
+# macOS / editor / agent cruft
+.DS_Store
+.claude
+
+# internal design reference (mockup lives in docs/ instead)
+/stitch_ai_chat_translation_assistant

@@ -1,0 +1,52 @@
+* { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #08080a; }
+#root { height: 100%; }
+
+.ls-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.ls-scroll::-webkit-scrollbar-thumb { background: rgba(143,145,150,0.25); border-radius: 9999px; }
+.ls-scroll::-webkit-scrollbar-track { background: transparent; }
+/* chat scroll: start the scrollbar below the floating header so it doesn't peek out from behind it */
+.ls-chatscroll::-webkit-scrollbar-track { margin-top: 72px; }
+.ls-x::-webkit-scrollbar { display: none; }
+.ls-x { -ms-overflow-style: none; scrollbar-width: none; }
+input::placeholder, textarea::placeholder { color:#76777c; opacity:1; }
+
+/* auto-parsed text highlight inside the message input (overlay mirror) — per-line,
+   text-width; blank body lines get a small highlight too (no-break space) */
+.ls-hl { background: rgba(189,199,215,0.16); border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(189,199,215,0.12); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+
+@keyframes ls-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ls-pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes ls-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+@keyframes ls-bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-3px); opacity: 1; } }
+.ls-msg { animation: ls-rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+@keyframes ls-swap { from { opacity: 0; transform: translateY(6px) scale(0.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.ls-swap { animation: ls-swap 0.95s cubic-bezier(0.22,1,0.36,1) both; will-change: opacity, transform; }
+@keyframes ls-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ls-screen-in { from { opacity: 0; transform: translateY(10px) scale(0.992); } to { opacity: 1; transform: none; } }
+.ls-screen { animation: ls-screen-in 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* toast notifications: rise in, fade+drop out (ls-toast-out is declared last so it wins) */
+@keyframes ls-toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(10px) scale(0.96); } }
+.ls-toast { animation: ls-rise 0.34s cubic-bezier(0.16,1,0.3,1) both; will-change: transform, opacity; }
+.ls-toast-out { animation: ls-toast-out 0.22s cubic-bezier(0.4,0,1,1) forwards; }
+
+/* hover / active states (CSS replacements for the design's style-hover / style-active) */
+.ls-press:active { transform: scale(0.92); }
+.ls-press-96:active { transform: scale(0.96); }
+.ls-settings-btn:hover { background: rgba(70,73,79,0.7) !important; color: #e4e2e3 !important; }
+.ls-row:hover { background: rgba(53,53,54,0.4) !important; }
+.ls-chip1:hover { background: rgba(70,73,79,0.9) !important; }
+.ls-chip2:hover { border-color: rgba(189,199,215,0.4) !important; }
+.ls-clear:hover { color: #c5c6cc !important; }
+.ls-chipedit:hover { background: rgba(189,199,215,0.12) !important; color: #bdc7d7 !important; }
+.ls-chipdel:hover { background: rgba(255,180,171,0.12) !important; color: #ffb4ab !important; }
+.ls-close:hover { background: rgba(143,145,150,0.14) !important; color: #e4e2e3 !important; }
+.ls-filler:hover { color: #bdc7d7 !important; }
+.ls-removeself:hover { background: rgba(255,180,171,0.12) !important; color: #ffb4ab !important; }
+.ls-ctxedit:hover { background: rgba(143,145,150,0.14) !important; }
+.ls-ctxdel:hover { background: rgba(255,180,171,0.12) !important; }
+.ls-langbtn:hover { background: rgba(189,199,215,0.12) !important; }
+/* mobile conversation row */
+.ls-mrow:hover { background: rgba(53,53,54,0.45); }
+.ls-mrow:active { background: rgba(53,53,54,0.7); }
