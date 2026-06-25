@@ -1,0 +1,63 @@
+name: build-macos
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+# Cancel an in-progress run when a newer commit is pushed to the same ref
+# (saves the 10x-billed macOS minutes).
+concurrency:
+  group: build-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # needed to attach the .dmg to a Release on v* tags
+
+jobs:
+  macos:
+    runs-on: macos-14 # Apple Silicon runner; cross-compiles x86_64 for the universal build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Rust (both macOS targets for a universal binary)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install dependencies
+        run: |
+          bun install
+          bun install --cwd frontend
+
+      # tauri build runs the frontend `beforeBuildCommand` (vite build) itself,
+      # then bundles a universal .app + .dmg. The crate lives at the repo root,
+      # so the bundles land under target/universal-apple-darwin/release/bundle.
+      - name: Build TrchSync (universal macOS)
+        run: bunx tauri build --target universal-apple-darwin
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrchSync-macos-universal
+          path: |
+            target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            target/universal-apple-darwin/release/bundle/macos/*.app
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release (v* tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          fail_on_unmatched_files: true
